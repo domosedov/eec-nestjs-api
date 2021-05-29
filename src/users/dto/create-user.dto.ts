@@ -3,11 +3,11 @@ import { Role } from '../type/role';
 
 export class CreateUserDto {
   @IsEmail()
-  readonly email: string;
+  readonly email!: string;
 
   @IsString()
-  readonly password: string;
+  readonly password!: string;
 
   @IsEnum(Role)
-  readonly role: Role;
+  readonly role!: Role;
 }

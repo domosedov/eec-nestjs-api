@@ -6,20 +6,29 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LocalAuthGuard } from '../auth/guard/local-auth.guard';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { Role } from './type/role';
+import { Roles } from '../auth/decorator/roles.decorator';
+import { RolesGuard } from '../auth/guard/roles.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
+  @UseGuards(LocalAuthGuard)
   @Get('/')
   async getUsers() {
     return this.userService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get(':id')
   async getUser(@Param('id') id: string) {
     return this.userService.findOne(parseInt(id));

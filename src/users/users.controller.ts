@@ -27,8 +27,7 @@ export class UsersController {
     return this.userService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getUser(@Param('id') id: string) {
     return this.userService.findOne(parseInt(id));
@@ -39,11 +38,15 @@ export class UsersController {
     return this.userService.create(dto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
   async deleteUser(@Param('id') id: string) {
     return this.userService.delete(parseInt(id));
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Patch(':id')
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.userService.update(parseInt(id), dto);

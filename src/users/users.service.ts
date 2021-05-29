@@ -21,6 +21,10 @@ export class UsersService {
     return this.users.find((user) => user.id === id);
   }
 
+  async findByEmail(email: User['email']) {
+    return this.users.find((user) => user.email === email);
+  }
+
   async findAll() {
     return this.users;
   }

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as R from 'ramda';
-
+import { v4 as uuid } from 'uuid';
 import { User } from '../users/type/user';
 import { UsersService } from '../users/users.service';
 
@@ -17,30 +16,65 @@ export class AuthService {
   async validateUser({ email, password }: Pick<User, 'email' | 'password'>) {
     const user = await this.userService.findByEmail(email);
 
+    // TODO add bcrypt hash password compare
     if (user && user.password === password) {
-      const result = R.omit(['password'], user);
-      return result;
+      return user;
     }
 
     return null;
   }
 
-  async login(user: Omit<User, 'password'>) {
-    const payload = { email: user.email, role: user.role, sub: user.id };
-    const accessToken = this.jwtService.sign(payload);
+  async login(user: User) {
+    const payload = { sub: user.id };
+    const token = uuid();
+
+    const accessToken = this.getAccessToken(payload);
+    const refreshToken = this.getRefreshToken({ ...payload, token });
+    const accessTokenCookie = this.getAccessTokenCookie(accessToken);
+    const refreshTokenCookie = this.getRefreshTokenCookie(refreshToken);
+
+    await this.userService.updateUserToken(user.id, token);
 
     return {
-      body: {
-        accessToken,
-        ...user,
-      },
-      cookie: this.getCookieWithJwt(accessToken),
+      accessToken,
+      accessTokenCookie,
+      refreshToken,
+      refreshTokenCookie,
     };
   }
 
-  getCookieWithJwt(token: string) {
+  async refresh(user: User) {
+    const payload = { sub: user.id };
+    const accessToken = this.getAccessToken(payload);
+    const accessTokenCookie = this.getAccessTokenCookie(accessToken);
+    return { accessToken, accessTokenCookie };
+  }
+
+  getAccessToken(payload: Record<string, any>) {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: `${this.configService.get<number>('JWT_EXPIRATION_TIME')}m`,
+    });
+  }
+
+  getRefreshToken(payload: Record<string, any>) {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+      expiresIn: `${this.configService.get<number>(
+        'JWT_REFRESH_EXPIRATION_TIME',
+      )}m`,
+    });
+  }
+
+  getAccessTokenCookie(token: string) {
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get<string>(
       'JWT_EXPIRATION_TIME',
+    )}`;
+  }
+
+  getRefreshTokenCookie(token: string) {
+    return `Refresh=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get<string>(
+      'JWT_REFRESH_EXPIRATION_TIME',
     )}`;
   }
 }

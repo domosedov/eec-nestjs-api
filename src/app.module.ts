@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
         PORT: Joi.number().default(8000),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION_TIME: Joi.number().required(),
+        JWT_REFRESH_EXPIRATION_TIME: Joi.number().required(),
       }),
       envFilePath: '.env.development',
       isGlobal: true,

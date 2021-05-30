@@ -10,10 +10,34 @@ export class UsersService {
 
   constructor() {
     this.users = [
-      { id: 1, email: 'test1@test.com', password: '2001', role: Role.ADMIN },
-      { id: 2, email: 'test2@test.com', password: '2002', role: Role.GUEST },
-      { id: 3, email: 'test3@test.com', password: '2003', role: Role.GUEST },
-      { id: 4, email: 'test4@test.com', password: '2004', role: Role.GUEST },
+      {
+        id: 1,
+        email: 'test1@test.com',
+        password: '2001',
+        role: Role.ADMIN,
+        token: '',
+      },
+      {
+        id: 2,
+        email: 'test2@test.com',
+        password: '2002',
+        role: Role.GUEST,
+        token: '',
+      },
+      {
+        id: 3,
+        email: 'test3@test.com',
+        password: '2003',
+        role: Role.GUEST,
+        token: '',
+      },
+      {
+        id: 4,
+        email: 'test4@test.com',
+        password: '2004',
+        role: Role.GUEST,
+        token: '',
+      },
     ];
   }
 
@@ -43,6 +67,15 @@ export class UsersService {
     if (userIndex === -1) throw new BadRequestException('User not found');
     const user = this.users[userIndex];
     const updatedUser = { ...user, ...dto };
+    this.users.splice(userIndex, 1, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserToken(id: User['id'], token: User['token']) {
+    const userIndex = this.users.findIndex((user) => user.id === id);
+    if (userIndex === -1) throw new BadRequestException('User not found');
+    const user = this.users[userIndex];
+    const updatedUser = { ...user, token };
     this.users.splice(userIndex, 1, updatedUser);
     return updatedUser;
   }

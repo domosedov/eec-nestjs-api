@@ -13,14 +13,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(
-    email: User['email'],
-    password: User['password'],
-  ): Promise<Omit<User, 'password'>> {
+  async validate(email: User['email'], password: User['password']) {
     const user = await this.authService.validateUser({ email, password });
-    if (!user) {
-      throw new UnauthorizedException();
-    }
+    if (!user) throw new UnauthorizedException();
     return user;
   }
 }
